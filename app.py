@@ -5,6 +5,7 @@ import os
 from dotenv import load_dotenv
 load_dotenv()
 from semantic_kernel import Kernel
+from filesystem_plugin import create_filesystem_plugin
 from semantic_kernel.utils.logging import setup_logging
 from semantic_kernel.functions import kernel_function
 from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion
@@ -24,7 +25,7 @@ async def main():
 
     
     chat_completion = OpenAIChatCompletion(
-        ai_model_id="gpt-4o-mini", 
+        ai_model_id="gpt-4.1-nano", 
         api_key=OPENAI_API_KEY
     )
 
@@ -40,13 +41,16 @@ async def main():
         plugin_name="Lights",
     )
 
+    filesystem_plugin = await create_filesystem_plugin()
+    kernel.add_plugin(filesystem_plugin)
+
     # Enable planning
     execution_settings = AzureChatPromptExecutionSettings()
     execution_settings.function_choice_behavior = FunctionChoiceBehavior.Auto()
 
     
     history = ChatHistory()
-
+    history.add_system_message("你可以控制燈光，管理檔案系統，請用繁體中文回答問題。")
    
     userInput = None
     while True:
